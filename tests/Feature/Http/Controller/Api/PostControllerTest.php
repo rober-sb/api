@@ -6,6 +6,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
+use App\Post;
+
 class PostControllerTest extends TestCase
 {
     use RefreshDatabase;
@@ -33,5 +35,24 @@ class PostControllerTest extends TestCase
 
         $response->assertStatus(422) //Estatus http imposible completar solicitud
             ->assertJsonValidationErrors('title');
+    }
+    
+    public function  test_show()
+    {
+        $post = factory(Post::class)->create();
+
+        $response = $this->json('GET',"/api/posts/$post->id");
+
+        $response->assertjsonStructure(['id', 'title','created_at','updated_at'])
+            ->assertJson(['title' => $post->title])
+            ->assertStatus(200);
+    }
+
+    public function  test_404_show()
+    {
+        
+        $response = $this->json('GET','/api/posts/1000');
+
+        $response->assertStatus(404);
     }
 }
